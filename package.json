@@ -10,11 +10,11 @@
     "body-parser": "^1.15.2",
     "dotenv": "^8.2.0",
     "express": "^4.12.4",
-    "mongoose": "^5.11.15"
+    "mongoose": "^8.5.1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/freeCodeCamp/boilerplate-mongomongoose.git"
+    "url": "https://github.com/Bonyaha/FCC_Mongoose.git"
   },
   "keywords": [
     "node",
