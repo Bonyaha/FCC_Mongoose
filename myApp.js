@@ -12,10 +12,26 @@ mongoose.connect(uri)
   });
 
 
-let Person;
+// Define the schema
+const personSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  age: { type: Number },
+  favoriteFoods: { type: [String] }
+});
 
-const createAndSavePerson = (done) => {
-  done(null /*, data*/);
+// Create the model
+let Person = mongoose.model('Person', personSchema);
+
+const createAndSavePerson = async () => {  
+    const person = new Person({
+      name: "John Doe",
+      age: 25,
+      favoriteFoods: ["pizza", "burger"]
+    });
+
+    const data = await person.save();
+    return data; 
+
 };
 
 const createManyPeople = (arrayOfPeople, done) => {

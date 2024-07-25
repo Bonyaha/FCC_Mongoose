@@ -82,7 +82,32 @@ router.post("/mongoose-model", function (req, res, next) {
 });
 
 const createPerson = require("./myApp.js").createAndSavePerson;
-router.get("/create-and-save-person", function (req, res, next) {
+router.get("/create-and-save-person", async (req, res, next) => {
+  // in case of incorrect function use wait timeout then respond
+  let t = setTimeout(() => {
+    next({ message: "timeout" });
+  }, TIMEOUT);
+  try {
+    const data = await createPerson();
+    clearTimeout(t);
+    if (!data) {
+      console.log("Missing `done()` argument");
+      return next({ message: "Missing callback argument" });
+    }
+    console.log(`data is: ${data}`);
+    const person = await Person.findById(data._id);
+    if (!person) {
+      return next({ message: "Person not found" });
+    }    
+    await Person.deleteOne({ _id: data._id });  // Use deleteOne to remove the person
+    res.json(person);
+  } catch (err) {
+    clearTimeout(t);
+    next(err);
+  }
+})
+
+/* router.get("/create-and-save-person", function (req, res, next) {
   // in case of incorrect function use wait timeout then respond
   let t = setTimeout(() => {
     next({ message: "timeout" });
@@ -104,7 +129,7 @@ router.get("/create-and-save-person", function (req, res, next) {
       pers.remove();
     });
   });
-});
+}); */
 
 const createPeople = require("./myApp.js").createManyPeople;
 router.post("/create-many-people", function (req, res, next) {
