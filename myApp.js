@@ -34,16 +34,16 @@ const createAndSavePerson = async () => {
 
 };
 
-const createManyPeople = async (arrayOfPeople) => {
-  
+const createManyPeople = async (arrayOfPeople) => {  
     await Person.deleteMany({});
     const result = await Person.create(arrayOfPeople);
     return result;
   };
 
-const findPeopleByName = (personName, done) => {
-  done(null /*, data*/);
-};
+  const findPeopleByName = async (personName) => {
+    const people = await Person.find({ name: personName });
+    return people;
+  };
 
 const findOneByFood = (food, done) => {
   done(null /*, data*/);
