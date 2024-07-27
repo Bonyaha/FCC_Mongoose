@@ -181,28 +181,25 @@ router.post("/find-all-by-name", async (req, res, next)=> {
 });
 
 const findByFood = require("./myApp.js").findOneByFood;
-router.post("/find-one-by-food", function (req, res, next) {
+router.post("/find-one-by-food", async(req, res, next) => {
   let t = setTimeout(() => {
     next({ message: "timeout" });
   }, TIMEOUT);
-  let p = new Person(req.body);
-  p.save(function (err, pers) {
-    if (err) {
-      return next(err);
-    }
-    findByFood(pers.favoriteFoods[0], function (err, data) {
-      clearTimeout(t);
-      if (err) {
-        return next(err);
-      }
+  try{
+    let p = new Person(req.body);
+    let pers = await p.save();
+    const data = await findByFood(pers.favoriteFoods[0]);
+    clearTimeout(t);
       if (!data) {
         console.log("Missing `done()` argument");
         return next({ message: "Missing callback argument" });
-      }
-      res.json(data);
-      p.remove();
-    });
-  });
+      }    
+    res.json(data);
+    await Person.deleteMany({});    
+  } catch (err) {
+    clearTimeout(t);
+    next(err);
+  }  
 });
 
 const findById = require("./myApp.js").findPersonById;
