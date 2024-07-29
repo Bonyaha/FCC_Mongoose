@@ -3,7 +3,14 @@ const mongoose = require('mongoose');
 
 const uri = process.env.MONGO_URI;
 console.log(`uri is: ${uri}`);
-mongoose.connect(uri)
+mongoose.connect(uri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  writeConcern: {
+    w: "majority",
+    wtimeout: 5000
+  }
+})
   .then(() => {
     console.log("Successfully connected to MongoDB");
   })
@@ -64,27 +71,58 @@ const findEditThenSave = async (personId) => {
   return person;
 };
 
-const findAndUpdate = (personName, done) => {
+const findAndUpdate = async (personName) => {
   const ageToSet = 20;
+  const filter = { name: personName };
+  const update = { age: ageToSet };
 
-  done(null /*, data*/);
+  const updatedPerson = await Person.findOneAndUpdate(filter, update, {
+    new: true
+  });
+  return updatedPerson;
 };
 
+/* const removeById = async(personId) => {
+  const filter = { _id: personId };
+  const deletedPerson = await Person.findOneAndRemove(filter);
+  console.log('deletedPerson is: ',deletedPerson);
+  return deletedPerson;
+}; */
 const removeById = (personId, done) => {
-  done(null /*, data*/);
+  Person.findOneAndRemove({ _id: personId }, (err, deletedPerson) => {
+    if (err) {
+      return done(err);
+    }
+    console.log('deletedPerson is: ', deletedPerson);
+    done(null, deletedPerson);
+  });
 };
 
 const removeManyPeople = (done) => {
   const nameToRemove = "Mary";
-
-  done(null /*, data*/);
+  Person.remove({ name: nameToRemove},(err, data) => {
+    if (err) {
+      return done(err);
+    }
+    console.log('deletedPersons are: ', data);
+    done(null, data);
+})  
 };
 
 const queryChain = (done) => {
   const foodToSearch = "burrito";
-
-  done(null /*, data*/);
+  Person.find({favoriteFoods: foodToSearch})
+  .sort({ name: 1 })
+  .limit(2)
+  .select('-age')
+  .exec((err, data) => {
+    if (err) {
+      return done(err);
+    }
+    done(null , data);
+})  
 };
+
 
 /** **Well Done !!**
 /* You completed these challenges, let's go celebrate !

@@ -249,36 +249,49 @@ router.post("/find-edit-save", async (req, res, next) => {
 });
 
 const update = require("./myApp.js").findAndUpdate;
-router.post("/find-one-update", function (req, res, next) {
+router.post("/find-one-update", async (req, res, next) =>{
   let t = setTimeout(() => {
     next({ message: "timeout" });
   }, TIMEOUT);
-  let p = new Person(req.body);
-  p.save(function (err, pers) {
-    if (err) {
-      return next(err);
+  try{
+    let p = new Person(req.body);
+    const pers = await p.save();
+    const data = await update(pers.name);
+    clearTimeout(t);
+    if (!data) {
+      console.log("Missing `done()` argument");
+      return next({ message: "Missing callback argument" });
     }
-    try {
-      update(pers.name, function (err, data) {
-        clearTimeout(t);
-        if (err) {
-          return next(err);
-        }
-        if (!data) {
-          console.log("Missing `done()` argument");
-          return next({ message: "Missing callback argument" });
-        }
-        res.json(data);
-        p.remove();
-      });
-    } catch (e) {
-      console.log(e);
-      return next(e);
-    }
-  });
+    res.json(data);
+    await Person.deleteMany({});
+  }catch (err) {
+    clearTimeout(t);
+    next(err);
+  }  
 });
 
 const removeOne = require("./myApp.js").removeById;
+/*router.post("/remove-one-person", async (req, res, next) => {
+   await Person.remove({});
+  let t = setTimeout(() => {
+    next({ message: "timeout" });
+  }, TIMEOUT);
+  try{
+    let p = new Person(req.body);
+    const pers = await p.save();
+    const data = await removeOne(pers._id);
+    clearTimeout(t);
+    if (!data) {
+      console.log("Missing `done()` argument");
+      return next({ message: "Missing callback argument" });
+    }
+    res.json(data);
+    await Person.deleteMany({});
+  }catch (err) {
+    clearTimeout(t);
+    next(err);
+  } */ 
+
 router.post("/remove-one-person", function (req, res, next) {
   Person.remove({}, function (err) {
     if (err) {
@@ -302,7 +315,7 @@ router.post("/remove-one-person", function (req, res, next) {
             console.log("Missing `done()` argument");
             return next({ message: "Missing callback argument" });
           }
-          console.log(data);
+          console.log('data is: ', data);
           Person.count(function (err, cnt) {
             if (err) {
               return next(err);
